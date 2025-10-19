@@ -1,6 +1,6 @@
 {
   "name": "nice-react-scroll",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Performance-optimized scroll components for React with centralized scroll management, sticky positioning, and intersection observer utilities",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
