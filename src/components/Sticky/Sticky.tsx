@@ -71,9 +71,9 @@ const Sticky: React.FC<StickyProps> = ({ children, order = 0, onStickyChange }) 
     const stickyTop = 0
     stickyTopRef.current = stickyTop
 
-    const shouldBeSticky =
-      originalTopRef.current === 0 ||
-      scrollY >= originalTopRef.current - stickyTopRef.current
+    // Only consider sticky if we've scrolled past the element's original position
+    // For elements at top (originalTop === 0), only sticky if scrollY > 0
+    const shouldBeSticky = scrollY >= originalTopRef.current - stickyTopRef.current && scrollY > 0
 
     if (shouldBeSticky !== isSticky) {
       setIsSticky(shouldBeSticky)
