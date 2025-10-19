@@ -39,27 +39,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const react_1 = __importStar(require("react"));
 const styled_components_1 = __importDefault(require("styled-components"));
 const StickyProvider_1 = require("../Sticky/StickyProvider");
-const LinksFlex = styled_components_1.default.div `
-  background-color: white;
+const LinksWrapper = styled_components_1.default.div `
   display: flex;
-  flex-direction: row;
-  justify-content: center;
-  gap: 1rem;
 `;
 const LinkAnchor = styled_components_1.default.a `
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0 1rem;
+  display: block;
   text-decoration: none;
-  height: 3rem;
-  color: ${props => (props.$isActive ? "#000" : "#999")};
-  cursor: ${props => (props.$isActive ? "default" : "pointer")};
-  transition: color 0.2s;
-
-  &:hover {
-    color: #000;
-  }
+`;
+const Typography = styled_components_1.default.span `
+  display: inline-block;
 `;
 /**
  * StickySectionLinks component with smooth scroll and active section detection
@@ -71,7 +59,8 @@ const LinkAnchor = styled_components_1.default.a `
  * Works best with StickySection components for automatic ID management.
  *
  * @param links - Array of section links with href and label
- * @param renderLink - Optional custom renderer for link items
+ * @param renderLink - Optional custom renderer for link items (replaces LinkAnchor if provided)
+ * @param renderWrapper - Optional custom renderer for the wrapper container (replaces LinksWrapper if provided)
  * @param className - Optional className for the wrapper
  *
  * @example
@@ -84,7 +73,7 @@ const LinkAnchor = styled_components_1.default.a `
  * />
  * ```
  */
-const StickySectionLinks = ({ links, renderLink, className }) => {
+const StickySectionLinks = ({ links, renderLink, renderWrapper, className, }) => {
     const stickyContext = (0, react_1.useContext)(StickyProvider_1.StickyContext);
     const [activeSection, setActiveSection] = (0, react_1.useState)("");
     (0, react_1.useEffect)(() => {
@@ -101,7 +90,10 @@ const StickySectionLinks = ({ links, renderLink, className }) => {
             return;
         // Calculate rootMargin to account for sticky header
         const stickyOffset = (stickyContext === null || stickyContext === void 0 ? void 0 : stickyContext.getTotalStickyHeight()) || 0;
-        const rootMargin = `-${stickyOffset}px 0px -50% 0px`;
+        // Get the height of the SectionLinks bar
+        const sectionLinksElement = document.querySelector("[data-sectionlinks]");
+        const sectionLinksHeight = (sectionLinksElement === null || sectionLinksElement === void 0 ? void 0 : sectionLinksElement.offsetHeight) || 0;
+        const rootMargin = `-${stickyOffset + sectionLinksHeight}px 0px -50% 0px`;
         // Create intersection observer
         const observer = new IntersectionObserver(entries => {
             // Find the first intersecting section
@@ -112,7 +104,7 @@ const StickySectionLinks = ({ links, renderLink, className }) => {
             }
         }, {
             rootMargin,
-            threshold: 0
+            threshold: 0,
         });
         // Observe all sections
         sections.forEach(section => observer.observe(section));
@@ -122,7 +114,6 @@ const StickySectionLinks = ({ links, renderLink, className }) => {
         };
     }, [links, stickyContext]);
     const handleClick = (e, href) => {
-        var _a;
         e.preventDefault();
         // Extract the hash from the href (e.g., "#roles")
         const hash = href.startsWith("#") ? href : href.substring(href.indexOf("#"));
@@ -130,9 +121,7 @@ const StickySectionLinks = ({ links, renderLink, className }) => {
         if (targetElement) {
             const elementPosition = targetElement.getBoundingClientRect().top + window.scrollY;
             const stickyOffset = (stickyContext === null || stickyContext === void 0 ? void 0 : stickyContext.getTotalStickyHeight()) || 0;
-            // Get the height of the SectionLinks bar itself
-            const sectionLinksHeight = ((_a = e.currentTarget.closest("[data-sectionlinks]")) === null || _a === void 0 ? void 0 : _a.offsetHeight) || 0;
-            const offsetPosition = elementPosition - stickyOffset + sectionLinksHeight + 1;
+            const offsetPosition = elementPosition - stickyOffset + 1;
             // Custom smooth scroll with faster duration (300ms)
             const startPosition = window.scrollY;
             const distance = offsetPosition - startPosition;
@@ -155,15 +144,16 @@ const StickySectionLinks = ({ links, renderLink, className }) => {
             requestAnimationFrame(animation);
         }
     };
-    return (react_1.default.createElement(LinksFlex, { className: className, "data-sectionlinks": true }, links.map((link, index) => {
+    const linksContent = links.map((link, index) => {
         const hash = link.href.startsWith("#")
             ? link.href
             : link.href.substring(link.href.indexOf("#"));
         const isActive = activeSection === hash;
-        if (renderLink) {
-            return (react_1.default.createElement(react_1.default.Fragment, { key: index }, renderLink(link, isActive, e => handleClick(e, link.href))));
-        }
-        return (react_1.default.createElement(LinkAnchor, { key: index, href: link.href, onClick: e => handleClick(e, link.href), "$isActive": isActive }, link.label));
-    })));
+        return (react_1.default.createElement(LinkAnchor, { key: index, href: link.href, onClick: e => handleClick(e, link.href), "$isActive": isActive }, renderLink ? (renderLink(link, isActive)) : (react_1.default.createElement(Typography, { "$isActive": isActive }, link.label))));
+    });
+    if (renderWrapper) {
+        return react_1.default.createElement("div", { "data-sectionlinks": true }, renderWrapper(linksContent));
+    }
+    return (react_1.default.createElement(LinksWrapper, { className: className, "data-sectionlinks": true }, linksContent));
 };
 exports.default = StickySectionLinks;

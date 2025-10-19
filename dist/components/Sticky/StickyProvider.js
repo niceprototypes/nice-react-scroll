@@ -79,12 +79,10 @@ const StickyProvider = ({ children }) => {
             if (shouldBeFixed) {
                 instance.element.style.position = "fixed";
                 instance.element.style.top = `${instance.stickyTop}px`;
-                instance.element.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
             }
             else {
                 instance.element.style.position = "absolute";
                 instance.element.style.top = "0";
-                instance.element.style.boxShadow = "none";
             }
         });
     }, []);

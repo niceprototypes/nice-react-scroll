@@ -2,28 +2,17 @@ import React, { useContext, useState, useEffect } from "react"
 import styled from "styled-components"
 import { StickyContext } from "../Sticky/StickyProvider"
 
-const LinksFlex = styled.div`
-  background-color: white;
+const LinksWrapper = styled.div`
   display: flex;
-  flex-direction: row;
-  justify-content: center;
-  gap: 1rem;
 `
 
 const LinkAnchor = styled.a<{ $isActive: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0 1rem;
+  display: block;
   text-decoration: none;
-  height: 3rem;
-  color: ${props => (props.$isActive ? "#000" : "#999")};
-  cursor: ${props => (props.$isActive ? "default" : "pointer")};
-  transition: color 0.2s;
+`
 
-  &:hover {
-    color: #000;
-  }
+const Typography = styled.span<{ $isActive: boolean }>`
+  display: inline-block;
 `
 
 export interface StickySectionLink {
@@ -33,11 +22,8 @@ export interface StickySectionLink {
 
 export interface StickySectionLinksProps {
   links: StickySectionLink[]
-  renderLink?: (
-    link: StickySectionLink,
-    isActive: boolean,
-    onClick: (e: React.MouseEvent<HTMLAnchorElement>) => void
-  ) => React.ReactNode
+  renderLink?: (link: StickySectionLink, isActive: boolean) => React.ReactNode
+  renderWrapper?: (children: React.ReactNode) => React.ReactNode
   className?: string
 }
 
@@ -51,7 +37,8 @@ export interface StickySectionLinksProps {
  * Works best with StickySection components for automatic ID management.
  *
  * @param links - Array of section links with href and label
- * @param renderLink - Optional custom renderer for link items
+ * @param renderLink - Optional custom renderer for link items (replaces LinkAnchor if provided)
+ * @param renderWrapper - Optional custom renderer for the wrapper container (replaces LinksWrapper if provided)
  * @param className - Optional className for the wrapper
  *
  * @example
@@ -67,7 +54,8 @@ export interface StickySectionLinksProps {
 const StickySectionLinks: React.FC<StickySectionLinksProps> = ({
   links,
   renderLink,
-  className
+  renderWrapper,
+  className,
 }) => {
   const stickyContext = useContext(StickyContext)
   const [activeSection, setActiveSection] = useState<string>("")
@@ -87,7 +75,12 @@ const StickySectionLinks: React.FC<StickySectionLinksProps> = ({
 
     // Calculate rootMargin to account for sticky header
     const stickyOffset = stickyContext?.getTotalStickyHeight() || 0
-    const rootMargin = `-${stickyOffset}px 0px -50% 0px`
+
+    // Get the height of the SectionLinks bar
+    const sectionLinksElement = document.querySelector("[data-sectionlinks]") as HTMLElement
+    const sectionLinksHeight = sectionLinksElement?.offsetHeight || 0
+
+    const rootMargin = `-${stickyOffset + sectionLinksHeight}px 0px -50% 0px`
 
     // Create intersection observer
     const observer = new IntersectionObserver(
@@ -102,8 +95,8 @@ const StickySectionLinks: React.FC<StickySectionLinksProps> = ({
       },
       {
         rootMargin,
-        threshold: 0
-      }
+        threshold: 0,
+      },
     )
 
     // Observe all sections
@@ -117,7 +110,7 @@ const StickySectionLinks: React.FC<StickySectionLinksProps> = ({
 
   const handleClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
-    href: string
+    href: string,
   ) => {
     e.preventDefault()
 
@@ -131,13 +124,7 @@ const StickySectionLinks: React.FC<StickySectionLinksProps> = ({
         targetElement.getBoundingClientRect().top + window.scrollY
       const stickyOffset = stickyContext?.getTotalStickyHeight() || 0
 
-      // Get the height of the SectionLinks bar itself
-      const sectionLinksHeight =
-        (e.currentTarget.closest("[data-sectionlinks]") as HTMLElement)
-          ?.offsetHeight || 0
-
-      const offsetPosition =
-        elementPosition - stickyOffset + sectionLinksHeight + 1
+      const offsetPosition = elementPosition - stickyOffset + 1
 
       // Custom smooth scroll with faster duration (300ms)
       const startPosition = window.scrollY
@@ -167,34 +154,36 @@ const StickySectionLinks: React.FC<StickySectionLinksProps> = ({
     }
   }
 
+  const linksContent = links.map((link, index) => {
+    const hash = link.href.startsWith("#")
+      ? link.href
+      : link.href.substring(link.href.indexOf("#"))
+    const isActive = activeSection === hash
+
+    return (
+      <LinkAnchor
+        key={index}
+        href={link.href}
+        onClick={e => handleClick(e, link.href)}
+        $isActive={isActive}
+      >
+        {renderLink ? (
+          renderLink(link, isActive)
+        ) : (
+          <Typography $isActive={isActive}>{link.label}</Typography>
+        )}
+      </LinkAnchor>
+    )
+  })
+
+  if (renderWrapper) {
+    return <div data-sectionlinks>{renderWrapper(linksContent)}</div>
+  }
+
   return (
-    <LinksFlex className={className} data-sectionlinks>
-      {links.map((link, index) => {
-        const hash = link.href.startsWith("#")
-          ? link.href
-          : link.href.substring(link.href.indexOf("#"))
-        const isActive = activeSection === hash
-
-        if (renderLink) {
-          return (
-            <React.Fragment key={index}>
-              {renderLink(link, isActive, e => handleClick(e, link.href))}
-            </React.Fragment>
-          )
-        }
-
-        return (
-          <LinkAnchor
-            key={index}
-            href={link.href}
-            onClick={e => handleClick(e, link.href)}
-            $isActive={isActive}
-          >
-            {link.label}
-          </LinkAnchor>
-        )
-      })}
-    </LinksFlex>
+    <LinksWrapper className={className} data-sectionlinks>
+      {linksContent}
+    </LinksWrapper>
   )
 }
 

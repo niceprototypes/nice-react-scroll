@@ -39,6 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const react_1 = __importStar(require("react"));
 const styled_components_1 = __importDefault(require("styled-components"));
 const StickyProvider_1 = require("./StickyProvider");
+const useScroll_1 = require("../../hooks/useScroll");
 const StickyOuterWrapper = styled_components_1.default.div `
   position: relative;
   width: 100%;
@@ -46,7 +47,6 @@ const StickyOuterWrapper = styled_components_1.default.div `
 const StickyInnerWrapper = styled_components_1.default.div `
   width: 100%;
   z-index: 1;
-  transition: box-shadow 0.3s;
 `;
 /**
  * Sticky component with automatic stacking support
@@ -55,18 +55,23 @@ const StickyInnerWrapper = styled_components_1.default.div `
  * Multiple sticky elements stack on top of each other based on their order prop.
  *
  * @param order - Stacking order (lower numbers appear above)
+ * @param onStickyChange - Callback fired when sticky state changes
  *
  * @example
  * ```tsx
- * <Sticky order={0}>
+ * <Sticky order={0} onStickyChange={(isSticky) => console.log(isSticky)}>
  *   <Header />
  * </Sticky>
  * ```
  */
-const Sticky = ({ children, order = 0 }) => {
+const Sticky = ({ children, order = 0, onStickyChange }) => {
     const context = (0, react_1.useContext)(StickyProvider_1.StickyContext);
     const outerRef = (0, react_1.useRef)(null);
     const innerRef = (0, react_1.useRef)(null);
+    const scrollY = (0, useScroll_1.useScroll)();
+    const [isSticky, setIsSticky] = (0, react_1.useState)(false);
+    const originalTopRef = (0, react_1.useRef)(0);
+    const stickyTopRef = (0, react_1.useRef)(0);
     (0, react_1.useEffect)(() => {
         if (!context || !innerRef.current || !outerRef.current)
             return;
@@ -75,11 +80,27 @@ const Sticky = ({ children, order = 0 }) => {
         const height = element.offsetHeight;
         // Use outer element's position to determine when to stick
         const originalTop = outerElement.getBoundingClientRect().top + window.scrollY;
+        originalTopRef.current = originalTop;
         context.registerInstance(order, height, element, outerElement, originalTop);
         return () => {
             context.unregisterInstance(order);
         };
     }, [context, order]);
+    // Track sticky state and call callback
+    (0, react_1.useEffect)(() => {
+        if (!context)
+            return;
+        // For simplicity, we'll assume stickyTop is 0 for now
+        // In a more complete implementation, we'd calculate based on instances with lower order
+        const stickyTop = 0;
+        stickyTopRef.current = stickyTop;
+        const shouldBeSticky = originalTopRef.current === 0 ||
+            scrollY >= originalTopRef.current - stickyTopRef.current;
+        if (shouldBeSticky !== isSticky) {
+            setIsSticky(shouldBeSticky);
+            onStickyChange === null || onStickyChange === void 0 ? void 0 : onStickyChange(shouldBeSticky);
+        }
+    }, [scrollY, context, isSticky, onStickyChange]);
     if (!context) {
         return children;
     }

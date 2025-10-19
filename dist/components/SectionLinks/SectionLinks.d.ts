@@ -5,7 +5,8 @@ export interface StickySectionLink {
 }
 export interface StickySectionLinksProps {
     links: StickySectionLink[];
-    renderLink?: (link: StickySectionLink, isActive: boolean, onClick: (e: React.MouseEvent<HTMLAnchorElement>) => void) => React.ReactNode;
+    renderLink?: (link: StickySectionLink, isActive: boolean) => React.ReactNode;
+    renderWrapper?: (children: React.ReactNode) => React.ReactNode;
     className?: string;
 }
 /**
@@ -18,7 +19,8 @@ export interface StickySectionLinksProps {
  * Works best with StickySection components for automatic ID management.
  *
  * @param links - Array of section links with href and label
- * @param renderLink - Optional custom renderer for link items
+ * @param renderLink - Optional custom renderer for link items (replaces LinkAnchor if provided)
+ * @param renderWrapper - Optional custom renderer for the wrapper container (replaces LinksWrapper if provided)
  * @param className - Optional className for the wrapper
  *
  * @example
