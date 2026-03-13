@@ -7,15 +7,13 @@
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
+    "dist"
   ],
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
+    "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "npm run build"
   },
   "keywords": [
