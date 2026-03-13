@@ -1,32 +1,9 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useCallback
-} from "react"
-import { useScroll } from "../../hooks/useScroll"
-
-interface StickyInstance {
-  order: number
-  height: number
-  element: HTMLDivElement
-  outerElement: HTMLDivElement
-  originalTop: number
-  stickyTop: number
-}
-
-export interface StickyContextValue {
-  registerInstance: (
-    order: number,
-    height: number,
-    element: HTMLDivElement,
-    outerElement: HTMLDivElement,
-    originalTop: number
-  ) => void
-  unregisterInstance: (order: number) => void
-  getTotalStickyHeight: () => number
-}
+import React, { createContext, useContext, useRef, useCallback } from "react"
+import type {
+  StickyContextValue,
+  StickyProviderProps,
+  StickyInstance,
+} from "./types"
 
 export const StickyContext = createContext<StickyContextValue | null>(null)
 
@@ -41,8 +18,8 @@ export const useStickyContext = () => {
 /**
  * Provider for managing multiple sticky elements with stacking support
  *
- * Uses the centralized scroll manager from ScrollProvider for performance.
- * Handles positioning, stacking order, and visual effects for sticky elements.
+ * Calculates and provides the sticky top offset for each element based on stacking order.
+ * Uses native CSS position: sticky for better performance.
  *
  * @example
  * ```tsx
@@ -54,10 +31,7 @@ export const useStickyContext = () => {
  * </ScrollProvider>
  * ```
  */
-export const StickyProvider: React.FC<{ children: React.ReactNode }> = ({
-  children
-}) => {
-  const scrollY = useScroll()
+const StickyProvider: React.FC<StickyProviderProps> = ({ children }) => {
   const instancesRef = useRef<StickyInstance[]>([])
 
   const updatePositions = useCallback(() => {
@@ -68,51 +42,29 @@ export const StickyProvider: React.FC<{ children: React.ReactNode }> = ({
     })
   }, [])
 
-  const handleScroll = useCallback((scrollY: number) => {
-    instancesRef.current.forEach(instance => {
-      // If originalTop is 0, always keep it fixed
-      const shouldBeFixed =
-        instance.originalTop === 0 ||
-        scrollY >= instance.originalTop - instance.stickyTop
-
-      if (shouldBeFixed) {
-        instance.element.style.position = "fixed"
-        instance.element.style.top = `${instance.stickyTop}px`
-      } else {
-        instance.element.style.position = "absolute"
-        instance.element.style.top = "0"
-      }
-    })
-  }, [])
-
   const registerInstance = useCallback(
-    (
-      order: number,
-      height: number,
-      element: HTMLDivElement,
-      outerElement: HTMLDivElement,
-      originalTop: number
-    ) => {
+    (order: number, height: number): number => {
+      // Remove any existing instance with this order
       const filtered = instancesRef.current.filter(i => i.order !== order)
+
+      // Add new instance and sort by order
       instancesRef.current = [
         ...filtered,
         {
           order,
           height,
-          element,
-          outerElement,
-          originalTop,
-          stickyTop: 0
-        }
+          stickyTop: 0,
+        },
       ].sort((a, b) => a.order - b.order)
 
-      // Set the hardcoded height on the outer wrapper
-      outerElement.style.height = `${height}px`
-
+      // Recalculate all positions
       updatePositions()
-      handleScroll(window.scrollY)
+
+      // Return the sticky top offset for this element
+      const instance = instancesRef.current.find(i => i.order === order)
+      return instance?.stickyTop ?? 0
     },
-    [updatePositions, handleScroll]
+    [updatePositions]
   )
 
   const unregisterInstance = useCallback(
@@ -123,33 +75,30 @@ export const StickyProvider: React.FC<{ children: React.ReactNode }> = ({
     [updatePositions]
   )
 
-  const getTotalStickyHeight = useCallback(() => {
-    const currentScrollY = window.scrollY
-    let totalHeight = 0
-
-    instancesRef.current.forEach(instance => {
-      const shouldBeFixed =
-        instance.originalTop === 0 ||
-        currentScrollY >= instance.originalTop - instance.stickyTop
-
-      if (shouldBeFixed) {
-        totalHeight += instance.height
-      }
-    })
-
-    return totalHeight
+  const getStickyTop = useCallback((order: number): number => {
+    const instance = instancesRef.current.find(i => i.order === order)
+    return instance?.stickyTop ?? 0
   }, [])
 
-  // Subscribe to scroll updates
-  useEffect(() => {
-    handleScroll(scrollY)
-  }, [scrollY, handleScroll])
+  const getTotalStickyHeight = useCallback((): number => {
+    return instancesRef.current.reduce(
+      (total, instance) => total + instance.height,
+      0
+    )
+  }, [])
 
   return (
     <StickyContext.Provider
-      value={{ registerInstance, unregisterInstance, getTotalStickyHeight }}
+      value={{
+        registerInstance,
+        unregisterInstance,
+        getStickyTop,
+        getTotalStickyHeight,
+      }}
     >
       {children}
     </StickyContext.Provider>
   )
 }
+
+export default StickyProvider

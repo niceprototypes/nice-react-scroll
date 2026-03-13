@@ -1,27 +1,13 @@
 import React, { useEffect, useRef, useState } from "react"
-import styled from "styled-components"
 import { useScroll } from "../../hooks/useScroll"
-
-const FadeWrapper = styled.div<{ $opacity: number }>`
-  opacity: ${p => p.$opacity};
-  transition: opacity 0.1s linear;
-`
-
-export interface FadeOnScrollProps {
-  children: React.ReactNode
-  startPosition?: number
-  peakPosition?: number
-  endPosition?: number
-  startOpacity?: number
-  peakOpacity?: number
-  endOpacity?: number
-}
+import { FadeWrapper } from "./styles"
+import type { FadeOnScrollProps } from "./types"
 
 /**
  * FadeOnScroll component with opacity animation based on scroll position
  *
  * Animates element opacity as it scrolls through the viewport.
- * Uses the centralized scroll manager for optimal performance.
+ * Uses the centralized scroll manager and ResizeObserver for optimal performance.
  *
  * @param startPosition - Scroll progress % where fade in begins (default: 0)
  * @param peakPosition - Scroll progress % where peak opacity is reached (default: 50)
@@ -49,17 +35,43 @@ const FadeOnScroll: React.FC<FadeOnScrollProps> = ({
   endPosition = 100,
   startOpacity = 0,
   peakOpacity = 1,
-  endOpacity = 0
+  endOpacity = 0,
 }) => {
   const scrollY = useScroll()
   const wrapperRef = useRef<HTMLDivElement>(null)
   const [opacity, setOpacity] = useState(startOpacity)
 
+  // Cache element offset to reduce getBoundingClientRect calls
+  const elementTopRef = useRef<number>(0)
+
+  // Use ResizeObserver to update cached dimensions only when needed
   useEffect(() => {
     if (!wrapperRef.current) return
 
-    const rect = wrapperRef.current.getBoundingClientRect()
+    const updateDimensions = () => {
+      if (!wrapperRef.current) return
+      elementTopRef.current =
+        wrapperRef.current.getBoundingClientRect().top + window.scrollY
+    }
+
+    // Initial measurement
+    updateDimensions()
+
+    // Update on resize
+    const resizeObserver = new ResizeObserver(updateDimensions)
+    resizeObserver.observe(wrapperRef.current)
+
+    return () => resizeObserver.disconnect()
+  }, [])
+
+  // Calculate opacity based on scroll position
+  useEffect(() => {
+    if (!wrapperRef.current) return
+
     const windowHeight = window.innerHeight
+
+    // Calculate position relative to viewport
+    const rect = wrapperRef.current.getBoundingClientRect()
 
     // Calculate position as percentage: 0% when top is at bottom of screen, 100% when top is at top of screen
     const scrollProgress = ((windowHeight - rect.top) / windowHeight) * 100
@@ -84,7 +96,12 @@ const FadeOnScroll: React.FC<FadeOnScrollProps> = ({
       currentOpacity = endOpacity
     }
 
-    setOpacity(currentOpacity)
+    // Only update if opacity actually changed (avoid unnecessary renders)
+    setOpacity(prev => {
+      const delta = Math.abs(currentOpacity - prev)
+      // Only update if change is noticeable (> 0.01)
+      return delta > 0.01 ? currentOpacity : prev
+    })
   }, [
     scrollY,
     startPosition,
@@ -92,7 +109,7 @@ const FadeOnScroll: React.FC<FadeOnScrollProps> = ({
     endPosition,
     startOpacity,
     peakOpacity,
-    endOpacity
+    endOpacity,
   ])
 
   return (

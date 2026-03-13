@@ -1,8 +1,10 @@
 {
   "name": "nice-react-scroll",
-  "version": "1.2.5",
+  "version": "2.1.0",
+  "type": "module",
   "description": "Performance-optimized scroll components for React with centralized scroll management, sticky positioning, and intersection observer utilities",
   "main": "dist/index.js",
+  "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist",
@@ -10,7 +12,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
     "prepublishOnly": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "npm run build"
@@ -37,13 +40,17 @@
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0",
-    "styled-components": "^5.0.0 || ^6.0.0"
+    "styled-components": ">=6.0.0"
   },
   "devDependencies": {
-    "@types/react": "^18.3.26",
-    "@types/react-dom": "^18.3.7",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "nice-configuration": "file:../nice-configuration",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "rollup": "^4.0.0",
     "styled-components": "^6.1.19",
-    "typescript": "^5.9.3"
+    "typescript": "^5.5.0"
   },
   "dependencies": {}
 }

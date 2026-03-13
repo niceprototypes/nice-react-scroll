@@ -1,31 +1,18 @@
 import React, { useContext, useEffect, useRef, useState } from "react"
-import styled from "styled-components"
 import { StickyContext } from "./StickyProvider"
-import { useScroll } from "../../hooks/useScroll"
-
-const StickyOuterWrapper = styled.div`
-  position: relative;
-  width: 100%;
-`
-
-const StickyInnerWrapper = styled.div`
-  width: 100%;
-  z-index: 1;
-`
-
-export interface StickyProps {
-  children: React.ReactNode
-  order?: number
-  onStickyChange?: (isSticky: boolean) => void
-}
+import { StickyWrapper, StickySpacer } from "./styles"
+import type { StickyProps } from "./types"
 
 /**
  * Sticky component with automatic stacking support
  *
+ * Uses native CSS position: sticky with IntersectionObserver for callbacks.
+ * Provides significantly better performance than scroll-based approaches.
+ *
  * Elements stick to the top of the viewport when scrolled to their position.
  * Multiple sticky elements stack on top of each other based on their order prop.
  *
- * @param order - Stacking order (lower numbers appear above)
+ * @param order - Stacking order (lower numbers appear above). Default: 0
  * @param onStickyChange - Callback fired when sticky state changes
  *
  * @example
@@ -35,60 +22,118 @@ export interface StickyProps {
  * </Sticky>
  * ```
  */
-const Sticky: React.FC<StickyProps> = ({ children, order = 0, onStickyChange }) => {
+const Sticky: React.FC<StickyProps> = ({
+  children,
+  order = 0,
+  onStickyChange,
+}) => {
   const context = useContext(StickyContext)
-  const outerRef = useRef<HTMLDivElement>(null)
-  const innerRef = useRef<HTMLDivElement>(null)
-  const scrollY = useScroll()
-  const [isSticky, setIsSticky] = useState(false)
-  const originalTopRef = useRef<number>(0)
-  const stickyTopRef = useRef<number>(0)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const spacerRef = useRef<HTMLDivElement>(null)
+  const [stickyTop, setStickyTop] = useState(0)
+  const [isHidden, setIsHidden] = useState(false)
+  const [height, setHeight] = useState(0)
+  const lastScrollY = useRef(0)
+  const ticking = useRef(false)
 
+  // Register with StickyProvider to get stacking offset and measure height
   useEffect(() => {
-    if (!context || !innerRef.current || !outerRef.current) return
+    if (!context || !wrapperRef.current) return
 
-    const element = innerRef.current
-    const outerElement = outerRef.current
-    const height = element.offsetHeight
-    // Use outer element's position to determine when to stick
-    const originalTop =
-      outerElement.getBoundingClientRect().top + window.scrollY
+    const element = wrapperRef.current
+    const elementHeight = element.offsetHeight
 
-    originalTopRef.current = originalTop
-    context.registerInstance(order, height, element, outerElement, originalTop)
+    // Store height for spacer
+    setHeight(elementHeight)
+
+    // Register and get the sticky top offset
+    const offset = context.registerInstance(order, elementHeight)
+    setStickyTop(offset)
 
     return () => {
       context.unregisterInstance(order)
     }
   }, [context, order])
 
-  // Track sticky state and call callback
+  // Scroll direction detection
   useEffect(() => {
-    if (!context) return
+    const handleScroll = () => {
+      if (ticking.current) return
 
-    // For simplicity, we'll assume stickyTop is 0 for now
-    // In a more complete implementation, we'd calculate based on instances with lower order
-    const stickyTop = 0
-    stickyTopRef.current = stickyTop
+      ticking.current = true
 
-    // Only consider sticky if we've scrolled past the element's original position
-    // For elements at top (originalTop === 0), only sticky if scrollY > 0
-    const shouldBeSticky = scrollY >= originalTopRef.current - stickyTopRef.current && scrollY > 0
+      requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY
 
-    if (shouldBeSticky !== isSticky) {
-      setIsSticky(shouldBeSticky)
-      onStickyChange?.(shouldBeSticky)
+        // Only hide/show if scrolled past the spacer
+        if (spacerRef.current) {
+          const spacerTop = spacerRef.current.getBoundingClientRect().top
+
+          // If we're past the original position
+          if (spacerTop < 0) {
+            // Hide on scroll down, show on scroll up
+            if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+              setIsHidden(true)
+            } else {
+              setIsHidden(false)
+            }
+          } else {
+            // If we're above the original position, always show
+            setIsHidden(false)
+          }
+        }
+
+        lastScrollY.current = currentScrollY
+        ticking.current = false
+      })
     }
-  }, [scrollY, context, isSticky, onStickyChange])
+
+    window.addEventListener("scroll", handleScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+    }
+  }, [])
+
+  // Use IntersectionObserver for sticky state callback
+  useEffect(() => {
+    if (!spacerRef.current || !onStickyChange) return
+
+    // Observer to detect when the spacer crosses the viewport threshold
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // When spacer is not intersecting, element is sticky
+        const isSticky = !entry.isIntersecting
+        onStickyChange(isSticky)
+      },
+      {
+        threshold: [0],
+        // Account for sticky offset from stacked elements
+        rootMargin: `-${stickyTop}px 0px 0px 0px`,
+      }
+    )
+
+    observer.observe(spacerRef.current)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [onStickyChange, stickyTop])
 
   if (!context) {
-    return children
+    return <>{children}</>
   }
 
   return (
-    <StickyOuterWrapper ref={outerRef}>
-      <StickyInnerWrapper ref={innerRef}>{children}</StickyInnerWrapper>
-    </StickyOuterWrapper>
+    <>
+      {/* Spacer that also acts as spacer for scroll position detection */}
+      <StickySpacer ref={spacerRef} $height={height} />
+
+      {/* Fixed header that slides up/down based on scroll direction */}
+      <StickyWrapper ref={wrapperRef} $top={stickyTop} $isHidden={isHidden}>
+        {children}
+      </StickyWrapper>
+    </>
   )
 }
 

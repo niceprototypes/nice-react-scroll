@@ -1,31 +1,7 @@
 import React, { useContext, useState, useEffect } from "react"
-import styled from "styled-components"
 import { StickyContext } from "../Sticky/StickyProvider"
-
-const LinksWrapper = styled.div`
-  display: flex;
-`
-
-const LinkAnchor = styled.a<{ $isActive: boolean }>`
-  display: block;
-  text-decoration: none;
-`
-
-const Typography = styled.span<{ $isActive: boolean }>`
-  display: inline-block;
-`
-
-export interface StickySectionLink {
-  href: string
-  label: string
-}
-
-export interface StickySectionLinksProps {
-  links: StickySectionLink[]
-  renderLink?: (link: StickySectionLink, isActive: boolean) => React.ReactNode
-  renderWrapper?: (children: React.ReactNode) => React.ReactNode
-  className?: string
-}
+import { LinksWrapper, LinkAnchor, LinkTypography } from "./styles"
+import type { StickySectionLinksProps } from "./types"
 
 /**
  * StickySectionLinks component with smooth scroll and active section detection
@@ -77,7 +53,9 @@ const StickySectionLinks: React.FC<StickySectionLinksProps> = ({
     const stickyOffset = stickyContext?.getTotalStickyHeight() || 0
 
     // Get the height of the SectionLinks bar
-    const sectionLinksElement = document.querySelector("[data-sectionlinks]") as HTMLElement
+    const sectionLinksElement = document.querySelector(
+      "[data-sectionlinks]"
+    ) as HTMLElement
     const sectionLinksHeight = sectionLinksElement?.offsetHeight || 0
 
     const rootMargin = `-${stickyOffset + sectionLinksHeight}px 0px -50% 0px`
@@ -96,7 +74,7 @@ const StickySectionLinks: React.FC<StickySectionLinksProps> = ({
       {
         rootMargin,
         threshold: 0,
-      },
+      }
     )
 
     // Observe all sections
@@ -110,12 +88,14 @@ const StickySectionLinks: React.FC<StickySectionLinksProps> = ({
 
   const handleClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
-    href: string,
+    href: string
   ) => {
     e.preventDefault()
 
     // Extract the hash from the href (e.g., "#roles")
-    const hash = href.startsWith("#") ? href : href.substring(href.indexOf("#"))
+    const hash = href.startsWith("#")
+      ? href
+      : href.substring(href.indexOf("#"))
 
     const targetElement = document.querySelector(hash)
 
@@ -170,7 +150,7 @@ const StickySectionLinks: React.FC<StickySectionLinksProps> = ({
         {renderLink ? (
           renderLink(link, isActive)
         ) : (
-          <Typography $isActive={isActive}>{link.label}</Typography>
+          <LinkTypography $isActive={isActive}>{link.label}</LinkTypography>
         )}
       </LinkAnchor>
     )

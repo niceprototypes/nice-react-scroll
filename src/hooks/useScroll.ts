@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react"
-import { ScrollContext } from "../ScrollProvider"
+import { ScrollContext } from "../components/ScrollProvider"
 
 /**
  * Hook to subscribe to scroll updates from ScrollProvider

@@ -1,15 +1,11 @@
-import React, { createContext, useEffect, useRef, useCallback, ReactNode } from "react"
-
-export interface ScrollContextValue {
-  scrollY: number
-  subscribe: (callback: (scrollY: number) => void) => () => void
-}
+import React, { createContext, useEffect, useRef, useCallback } from "react"
+import type {
+  ScrollContextValue,
+  ScrollProviderProps,
+  ScrollSubscribeCallbackType,
+} from "./types"
 
 export const ScrollContext = createContext<ScrollContextValue | null>(null)
-
-interface ScrollProviderProps {
-  children: ReactNode
-}
 
 /**
  * Centralized scroll management provider for nice-react-scroll
@@ -25,12 +21,12 @@ interface ScrollProviderProps {
  * </ScrollProvider>
  * ```
  */
-export const ScrollProvider: React.FC<ScrollProviderProps> = ({ children }) => {
+const ScrollProvider: React.FC<ScrollProviderProps> = ({ children }) => {
   const scrollYRef = useRef(0)
-  const subscribersRef = useRef<Set<(scrollY: number) => void>>(new Set())
+  const subscribersRef = useRef<Set<ScrollSubscribeCallbackType>>(new Set())
   const rafIdRef = useRef<number | null>(null)
 
-  const subscribe = useCallback((callback: (scrollY: number) => void) => {
+  const subscribe = useCallback((callback: ScrollSubscribeCallbackType) => {
     subscribersRef.current.add(callback)
 
     // Immediately call with current scroll position
@@ -78,8 +74,12 @@ export const ScrollProvider: React.FC<ScrollProviderProps> = ({ children }) => {
 
   const value: ScrollContextValue = {
     scrollY: scrollYRef.current,
-    subscribe
+    subscribe,
   }
 
-  return <ScrollContext.Provider value={value}>{children}</ScrollContext.Provider>
+  return (
+    <ScrollContext.Provider value={value}>{children}</ScrollContext.Provider>
+  )
 }
+
+export default ScrollProvider

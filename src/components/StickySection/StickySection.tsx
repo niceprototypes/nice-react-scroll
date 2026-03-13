@@ -1,13 +1,5 @@
 import React from "react"
-
-export interface StickySectionProps {
-  id: string
-  children: React.ReactNode
-  as?: keyof JSX.IntrinsicElements
-  render?: (props: { id: string; children: React.ReactNode }) => React.ReactNode
-  className?: string
-  style?: React.CSSProperties
-}
+import type { StickySectionProps } from "./types"
 
 /**
  * StickySection component that wraps content with a semantic section element
@@ -51,10 +43,10 @@ export interface StickySectionProps {
 const StickySection: React.FC<StickySectionProps> = ({
   id,
   children,
-  as = "section",
+  as: Component = "section",
   render,
   className,
-  style
+  style,
 }) => {
   // If render function is provided, use it
   if (render) {
@@ -62,12 +54,10 @@ const StickySection: React.FC<StickySectionProps> = ({
   }
 
   // Otherwise use the specified element type
-  const Element = as
-
   return (
-    <Element id={id} className={className} style={style}>
+    <Component id={id} className={className} style={style}>
       {children}
-    </Element>
+    </Component>
   )
 }
 

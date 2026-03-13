@@ -1,20 +1,9 @@
 {
+  "extends": "nice-configuration/typescript/react",
   "compilerOptions": {
-    "target": "ES2015",
-    "module": "commonjs",
-    "lib": ["ES2015", "DOM"],
-    "jsx": "react",
-    "declaration": true,
-    "declarationMap": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
-    "resolveJsonModule": true
+    "outDir": "dist",
+    "declarationDir": "dist/types"
   },
-  "include": ["src/**/*"],
+  "include": ["src"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.test.tsx"]
 }
