@@ -4,7 +4,7 @@ This guide explains how to test the package locally in your application without 
 
 ## The Problem
 
-Using `npm link` directly can cause the "Invalid hook call" error because React gets loaded twice:
+Using `toolkit` directly can cause the "Invalid hook call" error because React gets loaded twice:
 - Once from your app's `node_modules`
 - Once from the library's `node_modules`
 
