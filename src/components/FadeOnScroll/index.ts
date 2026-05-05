@@ -3,5 +3,5 @@ export type {
   FadeOnScrollProps,
   FadePositionType,
   FadeOpacityType,
-} from "./types"
-export { default as FadeOnScrollTypes } from "./types"
+} from "./FadeOnScroll.types"
+export { default as FadeOnScrollTypes } from "./FadeOnScroll.types"

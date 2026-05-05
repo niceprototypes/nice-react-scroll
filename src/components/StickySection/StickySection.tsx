@@ -1,5 +1,5 @@
 import React from "react"
-import type { StickySectionProps } from "./types"
+import type { StickySectionProps } from "./StickySection.types"
 
 /**
  * StickySection component that wraps content with a semantic section element

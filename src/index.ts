@@ -18,8 +18,8 @@ export type {
   ScrollProviderProps,
   ScrollSubscribeCallbackType,
   ScrollUnsubscribeType,
-} from "./components/ScrollProvider/types"
-export { default as ScrollProviderTypes } from "./components/ScrollProvider/types"
+} from "./components/ScrollProvider/ScrollProvider.types"
+export { default as ScrollProviderTypes } from "./components/ScrollProvider/ScrollProvider.types"
 
 // Hooks
 export { useScroll } from "./hooks/useScroll"

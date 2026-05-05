@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from "react"
 import { StickyContext } from "../Sticky/StickyProvider"
-import { LinksWrapper, LinkAnchor, LinkTypography } from "./styles"
-import type { StickySectionLinksProps } from "./types"
+import { LinksWrapper, LinkAnchor, LinkTypography } from "./SectionLinks.styles"
+import type { StickySectionLinksProps } from "./SectionLinks.types"
 
 /**
  * StickySectionLinks component with smooth scroll and active section detection

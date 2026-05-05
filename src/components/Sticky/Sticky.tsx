@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from "react"
 import { StickyContext } from "./StickyProvider"
-import { StickyWrapper, StickySpacer } from "./styles"
-import type { StickyProps } from "./types"
+import { StickyWrapper, StickySpacer } from "./Sticky.styles"
+import type { StickyProps } from "./Sticky.types"
 
 /**
  * Sticky component with automatic stacking support

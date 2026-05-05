@@ -11,5 +11,5 @@ export type {
   StickyOrderType,
   StickyOnChangeType,
   StickyInstance,
-} from "./types"
-export { default as StickyTypes } from "./types"
+} from "./Sticky.types"
+export { default as StickyTypes } from "./Sticky.types"

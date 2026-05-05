@@ -3,7 +3,7 @@ import type {
   StickyContextValue,
   StickyProviderProps,
   StickyInstance,
-} from "./types"
+} from "./Sticky.types"
 
 export const StickyContext = createContext<StickyContextValue | null>(null)
 

@@ -4,5 +4,5 @@ export type {
   StickySectionLink,
   StickySectionLinksRenderLinkType,
   StickySectionLinksRenderWrapperType,
-} from "./types"
-export { default as SectionLinksTypes } from "./types"
+} from "./SectionLinks.types"
+export { default as SectionLinksTypes } from "./SectionLinks.types"

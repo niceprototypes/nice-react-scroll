@@ -4,5 +4,5 @@ export type {
   ScrollProviderProps,
   ScrollSubscribeCallbackType,
   ScrollUnsubscribeType,
-} from "./types"
-export { default as ScrollProviderTypes } from "./types"
+} from "./ScrollProvider.types"
+export { default as ScrollProviderTypes } from "./ScrollProvider.types"

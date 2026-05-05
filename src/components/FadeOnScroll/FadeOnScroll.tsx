@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import { useScroll } from "../../hooks/useScroll"
-import { FadeWrapper } from "./styles"
-import type { FadeOnScrollProps } from "./types"
+import { FadeWrapper } from "./FadeOnScroll.styles"
+import type { FadeOnScrollProps } from "./FadeOnScroll.types"
 
 /**
  * FadeOnScroll component with opacity animation based on scroll position

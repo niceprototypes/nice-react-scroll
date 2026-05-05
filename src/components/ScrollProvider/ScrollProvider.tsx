@@ -3,7 +3,7 @@ import type {
   ScrollContextValue,
   ScrollProviderProps,
   ScrollSubscribeCallbackType,
-} from "./types"
+} from "./ScrollProvider.types"
 
 export const ScrollContext = createContext<ScrollContextValue | null>(null)
 

@@ -4,5 +4,5 @@ export type {
   StickySectionElementType,
   StickySectionRenderProps,
   StickySectionRenderType,
-} from "./types"
-export { default as StickySectionTypes } from "./types"
+} from "./StickySection.types"
+export { default as StickySectionTypes } from "./StickySection.types"
