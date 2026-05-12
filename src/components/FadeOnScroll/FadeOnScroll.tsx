@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react"
 import { useScroll } from "../../hooks/useScroll"
+import { getFadeOpacity, getScrollProgress } from "./FadeOnScroll.helpers"
 import { FadeWrapper } from "./FadeOnScroll.styles"
 import type { FadeOnScrollProps } from "./FadeOnScroll.types"
 
@@ -64,42 +65,24 @@ const FadeOnScroll: React.FC<FadeOnScrollProps> = ({
     return () => resizeObserver.disconnect()
   }, [])
 
-  // Calculate opacity based on scroll position
   useEffect(() => {
     if (!wrapperRef.current) return
 
-    const windowHeight = window.innerHeight
-
-    // Calculate position relative to viewport
     const rect = wrapperRef.current.getBoundingClientRect()
+    const scrollProgress = getScrollProgress(rect.top, window.innerHeight)
+    const currentOpacity = getFadeOpacity({
+      scrollProgress,
+      startPosition,
+      peakPosition,
+      endPosition,
+      startOpacity,
+      peakOpacity,
+      endOpacity,
+    })
 
-    // Calculate position as percentage: 0% when top is at bottom of screen, 100% when top is at top of screen
-    const scrollProgress = ((windowHeight - rect.top) / windowHeight) * 100
-
-    let currentOpacity: number
-
-    if (scrollProgress < startPosition) {
-      // Before start: stay at start opacity
-      currentOpacity = startOpacity
-    } else if (scrollProgress < peakPosition) {
-      // Fade in phase
-      const progress =
-        (scrollProgress - startPosition) / (peakPosition - startPosition)
-      currentOpacity = startOpacity + (peakOpacity - startOpacity) * progress
-    } else if (scrollProgress < endPosition) {
-      // Fade out phase
-      const progress =
-        (scrollProgress - peakPosition) / (endPosition - peakPosition)
-      currentOpacity = peakOpacity - (peakOpacity - endOpacity) * progress
-    } else {
-      // After end: stay at end opacity
-      currentOpacity = endOpacity
-    }
-
-    // Only update if opacity actually changed (avoid unnecessary renders)
     setOpacity(prev => {
       const delta = Math.abs(currentOpacity - prev)
-      // Only update if change is noticeable (> 0.01)
+      // Skip sub-perceptual updates to avoid unnecessary renders
       return delta > 0.01 ? currentOpacity : prev
     })
   }, [
