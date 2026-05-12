@@ -13,8 +13,7 @@
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build",
-    "prepare": "npm run build"
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "react",
