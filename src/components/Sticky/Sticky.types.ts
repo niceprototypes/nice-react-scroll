@@ -15,6 +15,7 @@ export type StickyOnChangeType = (isSticky: boolean) => void
  */
 export interface StickyProps {
   children: React.ReactNode
+  className?: string
   order?: StickyOrderType
   onStickyChange?: StickyOnChangeType
 }

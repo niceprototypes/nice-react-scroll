@@ -24,6 +24,7 @@ import type { StickyProps } from "./Sticky.types"
  */
 const Sticky: React.FC<StickyProps> = ({
   children,
+  className,
   order = 0,
   onStickyChange,
 }) => {
@@ -130,7 +131,7 @@ const Sticky: React.FC<StickyProps> = ({
       <StickySpacer ref={spacerRef} $height={height} />
 
       {/* Fixed header that slides up/down based on scroll direction */}
-      <StickyWrapper ref={wrapperRef} $top={stickyTop} $isHidden={isHidden}>
+      <StickyWrapper ref={wrapperRef} className={className} $top={stickyTop} $isHidden={isHidden}>
         {children}
       </StickyWrapper>
     </>

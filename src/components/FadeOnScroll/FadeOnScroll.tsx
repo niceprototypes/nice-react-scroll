@@ -31,6 +31,7 @@ import type { FadeOnScrollProps } from "./FadeOnScroll.types"
  */
 const FadeOnScroll: React.FC<FadeOnScrollProps> = ({
   children,
+  className,
   startPosition = 0,
   peakPosition = 50,
   endPosition = 100,
@@ -96,7 +97,7 @@ const FadeOnScroll: React.FC<FadeOnScrollProps> = ({
   ])
 
   return (
-    <FadeWrapper ref={wrapperRef} $opacity={opacity}>
+    <FadeWrapper ref={wrapperRef} className={className} $opacity={opacity}>
       {children}
     </FadeWrapper>
   )

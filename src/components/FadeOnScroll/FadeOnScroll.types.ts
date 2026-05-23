@@ -15,6 +15,7 @@ export type FadeOpacityType = number
  */
 export interface FadeOnScrollProps {
   children: React.ReactNode
+  className?: string
   startPosition?: FadePositionType
   peakPosition?: FadePositionType
   endPosition?: FadePositionType
