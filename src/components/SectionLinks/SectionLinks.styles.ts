@@ -9,6 +9,6 @@ export const LinkAnchor = styled.a<{ $isActive: boolean }>`
   text-decoration: none;
 `
 
-export const LinkTypography = styled.span<{ $isActive: boolean }>`
+export const LinkInk = styled.span<{ $isActive: boolean }>`
   display: inline-block;
 `

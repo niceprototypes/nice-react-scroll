@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from "react"
 import { StickyContext } from "../Sticky/StickyProvider"
-import { LinksWrapper, LinkAnchor, LinkTypography } from "./SectionLinks.styles"
+import { LinksWrapper, LinkAnchor, LinkInk } from "./SectionLinks.styles"
 import type { StickySectionLinksProps } from "./SectionLinks.types"
 
 /**
@@ -150,7 +150,7 @@ const StickySectionLinks: React.FC<StickySectionLinksProps> = ({
         {renderLink ? (
           renderLink(link, isActive)
         ) : (
-          <LinkTypography $isActive={isActive}>{link.label}</LinkTypography>
+          <LinkInk $isActive={isActive}>{link.label}</LinkInk>
         )}
       </LinkAnchor>
     )
